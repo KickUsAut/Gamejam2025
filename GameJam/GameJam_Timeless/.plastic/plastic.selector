@@ -1,4 +1,0 @@
-repository "GameJam_Timeless/GameJam_Timeless@9072318265957@cloud"
-  path "/"
-    br "/main"
-    co "/main"
