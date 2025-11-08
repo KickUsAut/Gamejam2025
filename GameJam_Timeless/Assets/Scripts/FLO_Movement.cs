@@ -109,7 +109,10 @@ public class FLO_Movement : MonoBehaviour
         OnValidate();
     }
 
-    void Update () {
+	void Update () {
+		// WICHTIG: Aktualisiere upAxis zuerst
+		upAxis = FLO_CustomGravity.GetUpAxis(body.position);
+		
 		Vector2 playerInput;
 		playerInput.x = Input.GetAxis("Horizontal");
 		playerInput.y = Input.GetAxis("Vertical");
@@ -120,25 +123,25 @@ public class FLO_Movement : MonoBehaviour
 			forwardAxis = ProjectDirectionOnPlane(playerInputSpace.forward, upAxis);
 		}
 		else {
-			rightAxis = ProjectDirectionOnPlane(Vector3.right, upAxis);
-			forwardAxis = ProjectDirectionOnPlane(Vector3.forward, upAxis);
+			// Benutze die lokalen Achsen des Spielers anstatt globaler Achsen
+			rightAxis = ProjectDirectionOnPlane(transform.right, upAxis);
+			forwardAxis = ProjectDirectionOnPlane(transform.forward, upAxis);
 		}
         
         // KORRIGIERT: Berechne desiredVelocity relativ zur Planetenoberfläche
 		desiredVelocity = (rightAxis * playerInput.x + forwardAxis * playerInput.y) * maxSpeed;
 
         desiredJump |= Input.GetButtonDown("Jump");
-	}
-
-	void FixedUpdate () {
+	}	void FixedUpdate () {
+		// WICHTIG: Zuerst Gravität und upAxis aktualisieren
+		Vector3 gravity = FLO_CustomGravity.GetGravity(body.position, out upAxis);
+		
 		UpdateState();
         
         // HINZUGEFÜGT: Rotiere den Player zur Planetenoberfläche
         AlignToGravity();
         
 		AdjustVelocity();
-
-		Vector3 gravity = FLO_CustomGravity.GetGravity(body.position, out upAxis);
 
 		if (desiredJump) {
 			desiredJump = false;
@@ -153,7 +156,15 @@ public class FLO_Movement : MonoBehaviour
 
     // NEU: Richtet den Player zur Planetenoberfläche aus
     void AlignToGravity() {
-        Quaternion targetRotation = Quaternion.FromToRotation(transform.up, upAxis) * transform.rotation;
+        // Berechne die Ziel-Rotation basierend auf upAxis
+        Vector3 forward = Vector3.ProjectOnPlane(transform.forward, upAxis).normalized;
+        
+        // Fallback falls forward parallel zu upAxis ist
+        if (forward.sqrMagnitude < 0.01f) {
+            forward = Vector3.ProjectOnPlane(transform.right, upAxis).normalized;
+        }
+        
+        Quaternion targetRotation = Quaternion.LookRotation(forward, upAxis);
         transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
     }
 

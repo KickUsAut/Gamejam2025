@@ -15,12 +15,13 @@ public class FLO_CustomGravity : MonoBehaviour
     }
 
     public static Vector3 GetGravity (Vector3 position) {
-        return (position - planetCenter).normalized * Physics.gravity.y;
+        Vector3 up = (position - planetCenter).normalized;
+        return -up * Mathf.Abs(Physics.gravity.y);
     }
     
     public static Vector3 GetGravity (Vector3 position, out Vector3 upAxis) {
         Vector3 up = (position - planetCenter).normalized;
-        upAxis = Physics.gravity.y < 0f ? up : -up;
-        return up * Physics.gravity.y;
+        upAxis = up;
+        return -up * Mathf.Abs(Physics.gravity.y);
     }
 }
