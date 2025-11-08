@@ -64,7 +64,7 @@ public class ShadowSpawner : MonoBehaviour
         recorder.StartRecording();
     }
     
-    public void StopRecoriding()
+    public void StopRecording()
     {
         recorder.StopRecording();
     }
