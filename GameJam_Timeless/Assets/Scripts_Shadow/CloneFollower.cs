@@ -6,12 +6,6 @@ public class CloneFollower : MonoBehaviour
     public float moveSpeed = 5f; // TODO change to player speed | or sth that feels good
     private List<Vector3> _path;
     private int _currentIndex = 0;
-    
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
 
     // Update is called once per frame
     void Update()

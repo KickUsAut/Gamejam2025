@@ -7,17 +7,13 @@ public class PathRecorder : MonoBehaviour
     private List<Vector3> _recordedPositions = new List<Vector3>();
     // TODO later add a List<Vector3> for rotation (for planet)
     private float _timer = 0f;
-    
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
+    private bool _isRecording = false;
 
     // Update is called once per frame
     void Update()
     {
-        // TODO later change to start Recording and not do it in Update
+        if (!_isRecording) return;
+        
         _timer += Time.deltaTime;
         if (_timer >= recordInterval)
         {
@@ -26,7 +22,7 @@ public class PathRecorder : MonoBehaviour
         }
     }
     
-    /* 
+    /** 
      * Returns a copy of the recorded positions
      * @return List of recorded Vector3 positions
      */
@@ -35,12 +31,21 @@ public class PathRecorder : MonoBehaviour
         return new List<Vector3>(_recordedPositions);
     }
     
-    /* 
-     * Resets the recorded positions => used to reset and track again
+    /** 
+     * Starts recording the positions
      */
-    public void ResetRecording()
+    public void StartRecording()
     {
         _recordedPositions.Clear();
         _timer = 0f;
+        _isRecording = true;
+    }
+    
+    /** 
+     * Ends recording and clears the recorded positions
+     */
+    public void StopRecording()
+    {
+        _isRecording = false;
     }
 }

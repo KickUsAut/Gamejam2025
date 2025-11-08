@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using System.Collections.Generic;
 
@@ -16,11 +17,19 @@ public class CloneSpawner : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        // Only for testing purposes: Press H to spawn a clone
-        // TODO change to swap on new planet enter.
+        // Only for testing purposes: Press H to spawn a clone === Stop recording and play
+        // TODO change to swap BEFORE new planet enter.
         if (Input.GetKeyDown(KeyCode.H))
         {
+            _recorder.StopRecording();
             SpawnClone();
+        }
+        
+        // Only for testing purpose: Press F to start recording == Start recording
+        // TODO change to reset AFTER new planet enter.
+        if (Input.GetKeyDown(KeyCode.F))
+        {
+            _recorder.StartRecording();
         }
     }
     
