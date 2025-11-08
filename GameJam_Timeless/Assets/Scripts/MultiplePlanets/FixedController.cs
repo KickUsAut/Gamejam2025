@@ -132,6 +132,9 @@ public class FixedController : MonoBehaviour
  
     private void OnTriggerEnter(Collider collision)
     {
+        if (collision.isTrigger)
+            return;
+
         if (collision.transform != Planet.transform)
         {
             Planet = collision.transform.gameObject;
