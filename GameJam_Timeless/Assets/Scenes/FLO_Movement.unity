@@ -225,7 +225,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0.5, y: 0.35, z: 0.5}
-  m_LocalScale: {x: 10, y: 1, z: 10}
+  m_LocalScale: {x: 100, y: 1, z: 100}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -369,6 +369,7 @@ GameObject:
   - component: {fileID: 1215570698}
   - component: {fileID: 1215570697}
   - component: {fileID: 1215570700}
+  - component: {fileID: 1215570701}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -494,6 +495,30 @@ MonoBehaviour:
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
   m_Version: 2
+--- !u!114 &1215570701
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1215570696}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e70b5229842fa4655b224137c6fb89ce, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FLO_OrbitCamera
+  focus: {fileID: 1736495149}
+  distance: 5
+  focusRadius: 1
+  focusCentering: 0.5
+  rotationSpeed: 90
+  minVerticalAngle: 0
+  maxVerticalAngle: 60
+  alignDelay: 0
+  alignSmoothRange: 45
+  obstructionMask:
+    serializedVersion: 2
+    m_Bits: 1553
 --- !u!1 &1736495145
 GameObject:
   m_ObjectHideFlags: 0
@@ -509,7 +534,7 @@ GameObject:
   - component: {fileID: 1736495151}
   - component: {fileID: 1736495150}
   - component: {fileID: 1736495152}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Player
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -624,7 +649,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FLO_Movement
   maxSpeed: 10
   maxAcceleration: 40
+  maxAirAcceleration: 1
   jumpHeight: 2
+  maxAirJumps: 0
+  maxGroundAngle: 25
+  maxStairsAngle: 50
+  maxSnapSpeed: 100
+  probeDistance: 1
+  probeMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  stairsMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  playerInputSpace: {fileID: 0}
 --- !u!96 &1736495151
 TrailRenderer:
   serializedVersion: 3
