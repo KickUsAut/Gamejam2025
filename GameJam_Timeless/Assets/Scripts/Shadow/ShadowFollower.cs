@@ -1,6 +1,11 @@
 using UnityEngine;
 using System.Collections.Generic;
 
+/**
+ * This script makes the clone follow a recorded path of positions and rotations.
+ * It should be attached to the clone GameObject Automatically when spawned.
+ * So no manual needed for it.
+ */
 public class CloneFollower : MonoBehaviour
 {
     public float moveSpeed = 5f; // TODO change to player speed | or sth that feels good
@@ -12,8 +17,14 @@ public class CloneFollower : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (HasStartedPath() || HasFinishedPath()) return;
+        if (HasStartedPath()) return;
 
+        if (HasFinishedPath()) 
+        {
+            DestroyClone();
+            return;
+        }
+        
         Vector3 targetPosition = _pathPosition[_currentIndex];
         Quaternion targetRotation = _pathRotations[_currentIndex];
         transform.position = Vector3.MoveTowards(transform.position, targetPosition, moveSpeed * Time.deltaTime);
@@ -34,7 +45,8 @@ public class CloneFollower : MonoBehaviour
      */
     private bool HasStartedPath()
     {
-        return _pathPosition == null || _pathRotations == null;
+        return _pathPosition == null || _pathRotations == null || 
+            _pathPosition.Count == 0 || _pathRotations.Count == 0;
     }
     
     /**
@@ -54,5 +66,13 @@ public class CloneFollower : MonoBehaviour
     {
         _pathPosition = recordedPathPosition;
         _pathRotations = recordedPathRotations;
+    }
+    
+    /**
+     * Destroys the clone game object
+     */
+    public void DestroyClone()
+    {
+        Destroy(gameObject);
     }
 }

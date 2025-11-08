@@ -1,6 +1,11 @@
 using UnityEngine;
 using System.Collections.Generic;
 
+/**
+ * This script records the positions and rotations of the GameObject it is attached to over time.
+ * It can be started and stopped via public methods.
+ * - Needs to be attached to the Player GameObject.
+ */
 public class PathRecorder : MonoBehaviour
 {
     public float recordInterval = 0.1f;
