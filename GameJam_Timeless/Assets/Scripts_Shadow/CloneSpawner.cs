@@ -33,20 +33,21 @@ public class CloneSpawner : MonoBehaviour
         }
     }
     
-    /*
+    /**
      * Spawns a clone at the start of the recorded path
      * and assigns the recorded path to the clone to follow
      */
     void SpawnClone()
     {
-        List<Vector3> path = _recorder.GetRecordedPositions();
-        if (path.Count == 0) return; // shouldn't happen. but safety first.
+        List<Vector3> positions = _recorder.GetRecordedPositions();
+        List<Quaternion> rotations = _recorder.GetRecordedRotations();
+        if (positions.Count == 0 || rotations.Count == 0) return; // shouldn't happen. but safety first.
 
-        Vector3 startPosition = path[0];
-        // TODO Quaternion.identity should be later replaced with something like startRotation (because of rotation)
-        GameObject clone = Instantiate(clonePrefab, startPosition, Quaternion.identity);
+        Vector3 startPosition = positions[0];
+        Quaternion startRotation = rotations[0];
+        GameObject clone = Instantiate(clonePrefab, startPosition, startRotation);
         
         CloneFollower follower = clone.AddComponent<CloneFollower>();
-        follower.SetPath(path);
+        follower.SetPath(positions, rotations);
     }
 }

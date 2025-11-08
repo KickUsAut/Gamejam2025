@@ -5,7 +5,7 @@ public class PathRecorder : MonoBehaviour
 {
     public float recordInterval = 0.1f;
     private List<Vector3> _recordedPositions = new List<Vector3>();
-    // TODO later add a List<Vector3> for rotation (for planet)
+    private List<Quaternion> _recordedRotations = new List<Quaternion>();
     private float _timer = 0f;
     private bool _isRecording = false;
 
@@ -18,6 +18,7 @@ public class PathRecorder : MonoBehaviour
         if (_timer >= recordInterval)
         {
             _recordedPositions.Add(transform.position);
+            _recordedRotations.Add(transform.rotation);
             _timer = 0f;
         }
     }
@@ -32,11 +33,21 @@ public class PathRecorder : MonoBehaviour
     }
     
     /** 
+     * Returns a copy of the recorded rotations
+     * @return List of recorded Quaternion rotations
+     */
+    public List<Quaternion> GetRecordedRotations()
+    {
+        return new List<Quaternion>(_recordedRotations);
+    }
+    
+    /** 
      * Starts recording the positions
      */
     public void StartRecording()
     {
         _recordedPositions.Clear();
+        _recordedRotations.Clear();
         _timer = 0f;
         _isRecording = true;
     }
