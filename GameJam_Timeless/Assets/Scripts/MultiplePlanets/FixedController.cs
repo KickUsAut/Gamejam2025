@@ -9,10 +9,15 @@ public class FixedController : MonoBehaviour
 
     [Header("Move")]
     public float speed = 4f;
-    public float jumpForce = 15f;
+
+    [Header("Jump Tuning")]
+    [Tooltip("Gewünschte Sprunghöhe in Metern bezogen auf 'gravity' unten.")]
+    [SerializeField] float jumpHeight = 2.2f;   // 2.2 m
+    [SerializeField] float coyoteTime = 0.12f;  // nach Verlassen des Bodens
+    [SerializeField] float jumpBufferTime = 0.15f; // vor Landung gedrückt
 
     [Header("Gravity")]
-    [SerializeField] float gravity = 30f;
+    [SerializeField] float gravity = 30f;                 // m/s^2
     [SerializeField] float fallGravityMultiplier = 1.4f;
     [SerializeField] float lowJumpGravityMultiplier = 1.1f;
 
@@ -31,14 +36,20 @@ public class FixedController : MonoBehaviour
     [Header("Ground Tuning")]
     [SerializeField] float maxSlope = 55f;
     [SerializeField] float groundSnapDistance = 0.15f;
-    [SerializeField] int   minGroundFrames = 2;   // Entprellen
-    [SerializeField] float minAirTime = 0.08f;    // min. Luftzeit vor Landen
-    [SerializeField] float landHold = 0.18f;      // kurze Land-Pause
+    [SerializeField] int   minGroundFrames = 3;
+    [SerializeField] float minAirTime = 0.12f;
+    [SerializeField] float landHold = 0.12f;
 
     int groundedFrames = 0, ungroundedFrames = 0;
     float timeSinceGrounded = 0f, timeSinceUngrounded = 999f;
     bool inLandHold = false;
     float landHoldTimer = 0f;
+
+    // Jump helper
+    float coyoteCounter = 0f;
+    float jumpBufferCounter = 0f;
+    bool requestJump = false;
+    bool consumedJumpThisFrame = false; // blockt Soft-Snap direkt nach Sprung
 
     // State
     bool OnGround = false;
@@ -53,7 +64,6 @@ public class FixedController : MonoBehaviour
     float horizontalInput;
     float verticalInput;
     float rotationInput;
-    bool jumpInput;
     bool jumpHeld;
 
     void Start()
@@ -64,7 +74,6 @@ public class FixedController : MonoBehaviour
         rb.isKinematic = false;
 
         animator = GetComponent<Animator>();
-
         playerCollider = GetComponent<Collider>();
         if (playerCollider != null)
             groundCheckDistance = playerCollider.bounds.extents.y + groundCheckBuffer;
@@ -86,12 +95,10 @@ public class FixedController : MonoBehaviour
         if (rotationInput != 0f)
             transform.Rotate(0f, rotationInput * 150f * Time.deltaTime, 0f);
 
+        // Jump input
         jumpHeld = Input.GetKey(KeyCode.Space);
-        if (Input.GetKeyDown(KeyCode.Space) && OnGround)
-        {
-            jumpInput = true;
-            if (animator) animator.SetTrigger(ANIM_JUMP);
-        }
+        if (Input.GetKeyDown(KeyCode.Space))
+            jumpBufferCounter = jumpBufferTime; // Buffer starten
 
         // --- Ground Check: SphereCast + Entprellen ---
         RaycastHit hit;
@@ -101,7 +108,7 @@ public class FixedController : MonoBehaviour
 
         wasOnGround = OnGround;
 
-        // Sphere-Radius aus Collider ermitteln
+        // Sphere-Radius aus Collider
         float radius = 0.2f;
         if (playerCollider is CapsuleCollider cap) radius = cap.radius * 0.95f;
         else if (playerCollider is CharacterController cc) radius = cc.radius * 0.95f;
@@ -129,44 +136,53 @@ public class FixedController : MonoBehaviour
             rawGrounded = false;
         }
 
-        // Entprellen der Boden-Erkennung
+        // Entprellen
         if (rawGrounded) { groundedFrames++; ungroundedFrames = 0; }
         else { ungroundedFrames++; groundedFrames = 0; }
 
         OnGround = groundedFrames >= minGroundFrames;
 
-        // Zeiten pflegen
+        // Zeiten
         if (OnGround) { timeSinceGrounded = 0f; timeSinceUngrounded += Time.deltaTime; }
         else          { timeSinceUngrounded = 0f; timeSinceGrounded += Time.deltaTime; }
 
-        // Soft-Snap beim leichten Abheben
-        if (!OnGround && rawGrounded && hit.distance < groundSnapDistance && rb && !rb.isKinematic)
+        // Coyote / Buffer
+        coyoteCounter = OnGround ? coyoteTime : Mathf.Max(0f, coyoteCounter - Time.deltaTime);
+        jumpBufferCounter = Mathf.Max(0f, jumpBufferCounter - Time.deltaTime);
+
+        // Jump-Anforderung: Buffer aktiv und noch in Coyote
+        if (jumpBufferCounter > 0f && coyoteCounter > 0f)
+        {
+            requestJump = true;
+            jumpBufferCounter = 0f; // verbrauchen
+        }
+
+        // Soft-Snap beim leichten Abheben (aber NICHT in dem Frame, in dem wir springen)
+        if (!consumedJumpThisFrame && !OnGround && rawGrounded && hit.distance < groundSnapDistance && rb && !rb.isKinematic)
         {
             float vDotUp = Vector3.Dot(rb.velocity, transform.up);
             if (vDotUp <= 0f)
                 rb.AddForce((-transform.up) * gravity * 0.5f, ForceMode.Acceleration);
         }
+        consumedJumpThisFrame = false;
 
-        // Land-Pause starten nur wenn wirklich kurz in der Luft
+        // Land-Pause nur wenn wirklich kurz in der Luft
         if (OnGround && !wasOnGround && timeSinceUngrounded >= minAirTime)
         {
             inLandHold = true;
             landHoldTimer = landHold;
-            // Optional: animator?.SetTrigger("Land");
         }
-
-        // Land-Pause Timer
         if (inLandHold)
         {
             landHoldTimer -= Time.deltaTime;
             if (landHoldTimer <= 0f) inLandHold = false;
         }
 
-        // --- Rotationsausrichtung ---
+        // Rotationsausrichtung
         Quaternion toRotation = Quaternion.FromToRotation(transform.up, Groundnormal) * transform.rotation;
         transform.rotation = Quaternion.Slerp(transform.rotation, toRotation, Time.deltaTime * 10f);
 
-        // --- Animation Params ---
+        // Anim params
         UpdateAnimations();
     }
 
@@ -181,7 +197,7 @@ public class FixedController : MonoBehaviour
         Vector3 tangentForward = Vector3.ProjectOnPlane(transform.forward, gravDirection).normalized;
         Vector3 tangentRight = Vector3.ProjectOnPlane(transform.right, gravDirection).normalized;
 
-        // Horizontale Velocity aus Input
+        // Horizontal velocity aus Input
         Vector3 movementInput = tangentRight * horizontalInput + tangentForward * verticalInput;
         Vector3 desiredHorizontalVelocity = Vector3.ClampMagnitude(movementInput, 1f) * speed;
 
@@ -198,18 +214,32 @@ public class FixedController : MonoBehaviour
             rb.velocity = verticalVelocity + horizontalVel * 0.5f;
         }
 
-        // Jump
-        if (jumpInput)
+        // Ausgeführter Sprung: setze gezielte Startgeschwindigkeit, masseunabhängig
+        if (requestJump)
         {
-            rb.AddForce(transform.up * jumpForce, ForceMode.Impulse);
-            jumpInput = false;
+            requestJump = false;
+            inLandHold = false; // Land-Pause abbrechen
+
+            // Ziel-Startgeschwindigkeit aus gewünschter Höhe h: v0 = sqrt(2*g*h)
+            float jumpSpeed = Mathf.Sqrt(2f * gravity * Mathf.Max(0.01f, jumpHeight));
+
+            // vertikale Komponente ersetzen
+            Vector3 vUp = Vector3.Project(rb.velocity, transform.up);
+            Vector3 vFlat = rb.velocity - vUp;
+            rb.velocity = vFlat + transform.up * jumpSpeed; // ForceMode.VelocityChange-Äquivalent
+
+            // ein Frame lang kein Soft-Snap
+            consumedJumpThisFrame = true;
+
+            // Animation jetzt triggern
+            if (animator) animator.SetTrigger(ANIM_JUMP);
         }
 
         // Schwerkraft
-        float verticalSpeed = Vector3.Dot(rb.velocity, transform.up);
+        float verticalSpeedNow = Vector3.Dot(rb.velocity, transform.up);
         float effectiveGravity = gravity;
-        if (verticalSpeed < 0f) effectiveGravity *= fallGravityMultiplier;
-        else if (!jumpHeld)     effectiveGravity *= lowJumpGravityMultiplier;
+        if (verticalSpeedNow < 0f) effectiveGravity *= fallGravityMultiplier;
+        else if (!jumpHeld)        effectiveGravity *= lowJumpGravityMultiplier;
 
         rb.AddForce(gravDirection * -effectiveGravity, ForceMode.Acceleration);
     }
@@ -221,10 +251,10 @@ public class FixedController : MonoBehaviour
         float inputMagnitude = new Vector2(horizontalInput, verticalInput).magnitude;
         float movementSpeed = Mathf.Clamp01(inputMagnitude);
 
-        // Während Land-Pause nicht in run pushen
+        // weiches Setzen + Land-Pause
         float speedForAnimator = inLandHold ? 0f : movementSpeed;
+        animator.SetFloat(ANIM_SPEED, speedForAnimator, 0.15f, Time.deltaTime);
 
-        animator.SetFloat(ANIM_SPEED, speedForAnimator);
         animator.SetBool(ANIM_GROUNDED, OnGround);
 
         float verticalVelocity = rb ? Vector3.Dot(rb.velocity, transform.up) : 0f;
