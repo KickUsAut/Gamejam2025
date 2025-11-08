@@ -29,6 +29,11 @@ public class FLO_Movement : MonoBehaviour
     [SerializeField]
 	Transform playerInputSpace = default;
 
+    [SerializeField]
+    float rotationSpeed = 10f; // Geschwindigkeit der Rotation
+
+    Vector3 upAxis, rightAxis, forwardAxis;
+
     float minGroundDotProduct, minStairsDotProduct;
 
     float GetMinDot (int layer) {
@@ -42,7 +47,6 @@ public class FLO_Movement : MonoBehaviour
 
     bool OnSteep => steepContactCount > 0;
 
-    //bool onGround;
 	int groundContactCount, steepContactCount;
 
     int stepsSinceLastGrounded, stepsSinceLastJump;
@@ -57,7 +61,10 @@ public class FLO_Movement : MonoBehaviour
 		if (speed > maxSnapSpeed) {
 			return false;
 		}
-        if (!Physics.Raycast(body.position, Vector3.down, out RaycastHit hit, probeDistance, probeMask)) {
+        if (!Physics.Raycast(
+			body.position, -upAxis, out RaycastHit hit,
+			probeDistance, probeMask
+		)) {
 			return false;
 		}
         if (hit.normal.y < GetMinDot(hit.collider.gameObject.layer)) {
@@ -65,9 +72,9 @@ public class FLO_Movement : MonoBehaviour
 		}
         groundContactCount = 1;
 		contactNormal = hit.normal;
-		float dot = Vector3.Dot(velocity, hit.normal);
-		if (dot > 0f) {
-			velocity = (velocity - hit.normal * dot).normalized * speed;
+		float upDot = Vector3.Dot(upAxis, hit.normal);
+		if (upDot < GetMinDot(hit.collider.gameObject.layer)) {
+			return false;
 		}
 		return true;
 	}
@@ -75,7 +82,8 @@ public class FLO_Movement : MonoBehaviour
     bool CheckSteepContacts () {
 		if (steepContactCount > 1) {
 			steepNormal.Normalize();
-			if (steepNormal.y >= minGroundDotProduct) {
+            float upDot = Vector3.Dot(upAxis, steepNormal);
+			if (upDot >= minGroundDotProduct) {
 				groundContactCount = 1;
 				contactNormal = steepNormal;
 				return true;
@@ -88,8 +96,8 @@ public class FLO_Movement : MonoBehaviour
 
     Vector3 contactNormal, steepNormal;
 
-    Vector3 ProjectOnContactPlane (Vector3 vector) {
-		return vector - contactNormal * Vector3.Dot(vector, contactNormal);
+    Vector3 ProjectDirectionOnPlane (Vector3 direction, Vector3 normal) {
+		return (direction - normal * Vector3.Dot(direction, normal)).normalized;
 	}
 
     Rigidbody body;
@@ -97,6 +105,7 @@ public class FLO_Movement : MonoBehaviour
     void Awake()
     {
         body = GetComponent<Rigidbody>();
+        body.useGravity = false;
         OnValidate();
     }
 
@@ -107,48 +116,52 @@ public class FLO_Movement : MonoBehaviour
 		playerInput = Vector2.ClampMagnitude(playerInput, 1f);
 
 		if (playerInputSpace) {
-			Vector3 forward = playerInputSpace.forward;
-			forward.y = 0f;
-			forward.Normalize();
-			Vector3 right = playerInputSpace.right;
-			right.y = 0f;
-			right.Normalize();
-			desiredVelocity =
-				(forward * playerInput.y + right * playerInput.x) * maxSpeed;
+			rightAxis = ProjectDirectionOnPlane(playerInputSpace.right, upAxis);
+			forwardAxis = ProjectDirectionOnPlane(playerInputSpace.forward, upAxis);
 		}
 		else {
-			desiredVelocity =
-				new Vector3(playerInput.x, 0f, playerInput.y) * maxSpeed;
+			rightAxis = ProjectDirectionOnPlane(Vector3.right, upAxis);
+			forwardAxis = ProjectDirectionOnPlane(Vector3.forward, upAxis);
 		}
+        
+        // KORRIGIERT: Berechne desiredVelocity relativ zur Planetenoberfläche
+		desiredVelocity = (rightAxis * playerInput.x + forwardAxis * playerInput.y) * maxSpeed;
 
         desiredJump |= Input.GetButtonDown("Jump");
-
 	}
 
 	void FixedUpdate () {
 		UpdateState();
+        
+        // HINZUGEFÜGT: Rotiere den Player zur Planetenoberfläche
+        AlignToGravity();
+        
 		AdjustVelocity();
-		//float acceleration = onGround ? maxAcceleration : maxAirAcceleration;
-		//float maxSpeedChange = acceleration * Time.deltaTime;
 
-		//velocity.x =
-		//	Mathf.MoveTowards(velocity.x, desiredVelocity.x, maxSpeedChange);
-		//velocity.z =
-		//	Mathf.MoveTowards(velocity.z, desiredVelocity.z, maxSpeedChange);
+		Vector3 gravity = FLO_CustomGravity.GetGravity(body.position, out upAxis);
 
 		if (desiredJump) {
 			desiredJump = false;
-			Jump();
+			Jump(gravity);
 		}
-		body.velocity = velocity;
+
+		velocity += gravity * Time.deltaTime;
+
+        body.velocity = velocity;
 		ClearState();
 	}
+
+    // NEU: Richtet den Player zur Planetenoberfläche aus
+    void AlignToGravity() {
+        Quaternion targetRotation = Quaternion.FromToRotation(transform.up, upAxis) * transform.rotation;
+        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
+    }
 
     void UpdateState () {
 		stepsSinceLastGrounded += 1;
         stepsSinceLastJump += 1;
 		velocity = body.velocity;
-		if (OnGround || SnapToGround()|| CheckSteepContacts()) {
+		if (OnGround || SnapToGround() || CheckSteepContacts()) {
 			stepsSinceLastGrounded = 0;
 			jumpPhase = 0;
 			if (groundContactCount > 1) {
@@ -156,11 +169,11 @@ public class FLO_Movement : MonoBehaviour
 			}
 		}
 		else {
-			contactNormal = Vector3.up;
+			contactNormal = upAxis;
 		}
 	}
 
-    void Jump () {
+    void Jump (Vector3 gravity) {
         Vector3 jumpDirection;
         if (OnGround) {
 			jumpDirection = contactNormal;
@@ -179,27 +192,21 @@ public class FLO_Movement : MonoBehaviour
 			return;
 		}
         stepsSinceLastJump = 0;
-        if (stepsSinceLastJump > 1) {
-				jumpPhase = 0;
-			}
 		jumpPhase += 1;
-		float jumpSpeed = Mathf.Sqrt(-2f * Physics.gravity.y * jumpHeight);
-        jumpDirection = (jumpDirection + Vector3.up).normalized;
+		float jumpSpeed = Mathf.Sqrt(2f * gravity.magnitude * jumpHeight);
+        jumpDirection = (jumpDirection + upAxis).normalized;
 		float alignedSpeed = Vector3.Dot(velocity, jumpDirection);
 		if (alignedSpeed > 0f) {
 			jumpSpeed = Mathf.Max(jumpSpeed - alignedSpeed, 0f);
 		}
 		velocity += jumpDirection * jumpSpeed;
-		//}
 	}
 
     void OnCollisionEnter (Collision collision) {
-		//onGround = true;
 		EvaluateCollision(collision);
 	}
 
 	void OnCollisionStay (Collision collision) {
-		//onGround = true;
 		EvaluateCollision(collision);
 	}
 	
@@ -207,11 +214,12 @@ public class FLO_Movement : MonoBehaviour
 		float minDot = GetMinDot(collision.gameObject.layer);
 		for (int i = 0; i < collision.contactCount; i++) {
 			Vector3 normal = collision.GetContact(i).normal;
-			if (normal.y >= minDot) {
+			float upDot = Vector3.Dot(upAxis, normal);
+			if (upDot >= minDot) {
 				groundContactCount += 1;
 				contactNormal += normal;
 			}
-            else if (normal.y > -0.01f) {
+			else if (upDot > -0.01f) {
 				steepContactCount += 1;
 				steepNormal += normal;
 			}
@@ -224,8 +232,8 @@ public class FLO_Movement : MonoBehaviour
 	}
 
     void AdjustVelocity () {
-		Vector3 xAxis = ProjectOnContactPlane(Vector3.right).normalized;
-		Vector3 zAxis = ProjectOnContactPlane(Vector3.forward).normalized;
+		Vector3 xAxis = ProjectDirectionOnPlane(rightAxis, contactNormal);
+		Vector3 zAxis = ProjectDirectionOnPlane(forwardAxis, contactNormal);
 
         float currentX = Vector3.Dot(velocity, xAxis);
 		float currentZ = Vector3.Dot(velocity, zAxis);
@@ -233,10 +241,8 @@ public class FLO_Movement : MonoBehaviour
         float acceleration = OnGround ? maxAcceleration : maxAirAcceleration;
 		float maxSpeedChange = acceleration * Time.deltaTime;
 
-		float newX =
-			Mathf.MoveTowards(currentX, desiredVelocity.x, maxSpeedChange);
-		float newZ =
-			Mathf.MoveTowards(currentZ, desiredVelocity.z, maxSpeedChange);
+		float newX = Mathf.MoveTowards(currentX, desiredVelocity.x, maxSpeedChange);
+		float newZ = Mathf.MoveTowards(currentZ, desiredVelocity.z, maxSpeedChange);
 
         velocity += xAxis * (newX - currentX) + zAxis * (newZ - currentZ);
 	}
