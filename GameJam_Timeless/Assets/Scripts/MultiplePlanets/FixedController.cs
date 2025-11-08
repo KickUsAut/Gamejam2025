@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class FixedController : MonoBehaviour
 {
-     public GameObject Planet;
+    public GameObject Planet;
     public GameObject PlayerPlaceholder;
  
  
@@ -12,12 +12,9 @@ public class FixedController : MonoBehaviour
     float gravity = 100;
     bool OnGround = false;
  
- 
     float distanceToGround;
     Vector3 Groundnormal;
- 
- 
- 
+
     private Rigidbody rb;
  
     // Start is called before the first frame update
