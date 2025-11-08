@@ -2,6 +2,7 @@ using UnityEngine;
 
 public class FixedController : MonoBehaviour
 {
+
     public GameObject Planet;
     public GameObject PlayerPlaceholder;
  
@@ -94,14 +95,16 @@ public class FixedController : MonoBehaviour
     
     void FixedUpdate()
     {
+
+        if (Planet == null) return;
         // MOVEMENT (Physik in FixedUpdate)
         Vector3 gravDirection = (transform.position - Planet.transform.position).normalized;
 
         Vector3 tangentForward = Vector3.ProjectOnPlane(transform.forward, gravDirection).normalized;
         Vector3 tangentRight = Vector3.ProjectOnPlane(transform.right, gravDirection).normalized;
 
-    Vector3 movementInput = tangentRight * horizontalInput + tangentForward * verticalInput;
-    Vector3 desiredHorizontalVelocity = Vector3.ClampMagnitude(movementInput, 1f) * speed;
+        Vector3 movementInput = tangentRight * horizontalInput + tangentForward * verticalInput;
+        Vector3 desiredHorizontalVelocity = Vector3.ClampMagnitude(movementInput, 1f) * speed;
 
         Vector3 currentVelocity = rb.velocity;
         Vector3 verticalVelocity = Vector3.Project(currentVelocity, transform.up);
@@ -150,4 +153,27 @@ public class FixedController : MonoBehaviour
             PlayerPlaceholder.GetComponent<FixedPlaceholder>().NewPlanet(Planet);
         }
     }
+
+    public void OnTeleported(GameObject newPlanet)
+    {
+        Planet = newPlanet;
+
+        // Up-Ausrichtung sofort korrigieren
+        Vector3 gravDirection = (transform.position - Planet.transform.position).normalized;
+        Quaternion toRotation = Quaternion.FromToRotation(transform.up, gravDirection) * transform.rotation;
+        transform.rotation = toRotation;
+
+        // Geschwindigkeit nullen, damit alte Grav/Beschleunigung nicht „nachzieht“
+        if (rb == null) rb = GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            rb.velocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+        }
+
+        // Placeholder informieren
+        var ph = PlayerPlaceholder != null ? PlayerPlaceholder.GetComponent<FixedPlaceholder>() : null;
+        if (ph != null) ph.NewPlanet(Planet);
+    }
+
 }
