@@ -1800,7 +1800,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -4216859302048453862, guid: 80a87caae97a548d6b4102fa2b98da8a, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -1.5
+      value: -1.31
       objectReference: {fileID: 0}
     - target: {fileID: -4216859302048453862, guid: 80a87caae97a548d6b4102fa2b98da8a, type: 3}
       propertyPath: m_LocalRotation.w
@@ -2117,6 +2117,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -927199367670048503, guid: 80a87caae97a548d6b4102fa2b98da8a, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1975734870}
+    - targetCorrespondingSourceObject: {fileID: -927199367670048503, guid: 80a87caae97a548d6b4102fa2b98da8a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1975734871}
   m_SourcePrefab: {fileID: 100100000, guid: 80a87caae97a548d6b4102fa2b98da8a, type: 3}
 --- !u!1 &1317305967
 GameObject:
@@ -2621,6 +2624,11 @@ MonoBehaviour:
   ANIM_JUMP: Jump
   ANIM_GROUNDED: Grounded
   ANIM_VERTICAL_VELOCITY: VerticalVelocity
+  maxSlope: 55
+  groundSnapDistance: 0.15
+  minGroundFrames: 2
+  minAirTime: 0.08
+  landHold: 0.18
 --- !u!54 &1975734864
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -2726,6 +2734,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemCollector
   itemCount: 0
   itemText: {fileID: 1317305969}
+--- !u!114 &1975734871
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1975734860}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d8f809c824fee964884371c05adaa6cf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PathRecorder
+  recordInterval: 0.1
 --- !u!1 &2063426322
 GameObject:
   m_ObjectHideFlags: 0
@@ -2770,6 +2791,7 @@ GameObject:
   - component: {fileID: 2070427737}
   - component: {fileID: 2070427736}
   - component: {fileID: 2070427735}
+  - component: {fileID: 2070427740}
   m_Layer: 0
   m_Name: Planet
   m_TagString: Untagged
@@ -2890,6 +2912,20 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2070427740
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2070427734}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8f565e6e1a6b7845a4276d1913e1ee0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ShadowSpawner
+  recorder: {fileID: 1975734871}
+  shadowPrefab: {fileID: 6737164778937158979, guid: efa855be22cd0354d920a1e88b7d48ba, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
