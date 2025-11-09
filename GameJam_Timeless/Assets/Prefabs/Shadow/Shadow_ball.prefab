@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 2199113653470496816}
   - component: {fileID: 1624545654102661487}
   - component: {fileID: 4499144362478944558}
+  - component: {fileID: 5975818125873611823}
   m_Layer: 0
   m_Name: Shadow_ball
   m_TagString: Ghost
@@ -154,3 +155,17 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &5975818125873611823
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6737164778937158979}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1bffd05580d0142e3b86b9e1aad697fa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ItemCollector
+  score: 0
+  pointsPerItem: 100
