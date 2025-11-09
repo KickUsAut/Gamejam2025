@@ -6,7 +6,7 @@ using System.Collections.Generic;
  * It should be attached to the clone GameObject Automatically when spawned.
  * So no manual needed for it.
  */
-public class CloneFollower : MonoBehaviour
+public class ShadowFollower : MonoBehaviour
 {
     public float moveSpeed = 5f; // TODO change to player speed | or sth that feels good
     public float rotationSpeed = 5f; // TODO change to player rotation speed | or sth that feels good
@@ -73,6 +73,18 @@ public class CloneFollower : MonoBehaviour
      */
     public void DestroyClone()
     {
-        Destroy(gameObject);
+        // Destroy(gameObject);
+        gameObject.SetActive(false);
+    }
+    
+    /**
+     * Resets the clone to the start of the path and reactivates it
+     */
+    public void ResetPath()
+    {
+        _currentIndex = 0;
+        transform.position = _pathPosition[_currentIndex];
+        transform.rotation = _pathRotations[_currentIndex];
+        gameObject.SetActive(true);
     }
 }

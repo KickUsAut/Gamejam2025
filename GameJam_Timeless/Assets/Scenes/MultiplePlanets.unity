@@ -1395,6 +1395,52 @@ MonoBehaviour:
   delaySeconds: 0.35
   oneUse: 0
   faceTargetForward: 1
+--- !u!1 &774067056
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 774067058}
+  - component: {fileID: 774067057}
+  m_Layer: 0
+  m_Name: ShadowSpawnerGlobal
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &774067057
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 774067056}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2570ed239b7192c4d85b8344bbb55f2f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ShadowSpawnerGlobal
+  recorder: {fileID: 1975734871}
+  shadowPrefab: {fileID: 6737164778937158979, guid: efa855be22cd0354d920a1e88b7d48ba, type: 3}
+--- !u!4 &774067058
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 774067056}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -24.45691, y: 2.10079, z: 3.25293}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &876702430
 GameObject:
   m_ObjectHideFlags: 0
@@ -2922,7 +2968,6 @@ GameObject:
   - component: {fileID: 2070427737}
   - component: {fileID: 2070427736}
   - component: {fileID: 2070427735}
-  - component: {fileID: 2070427740}
   m_Layer: 0
   m_Name: Planet
   m_TagString: Untagged
@@ -3043,20 +3088,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &2070427740
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2070427734}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e8f565e6e1a6b7845a4276d1913e1ee0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ShadowSpawner
-  recorder: {fileID: 1975734871}
-  shadowPrefab: {fileID: 6737164778937158979, guid: efa855be22cd0354d920a1e88b7d48ba, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -3078,3 +3109,4 @@ SceneRoots:
   - {fileID: 231897520}
   - {fileID: 1087568153}
   - {fileID: 1802754482}
+  - {fileID: 774067058}

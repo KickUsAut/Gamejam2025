@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 8868657033941810721}
   - component: {fileID: 1135731608747691700}
   - component: {fileID: 2199113653470496816}
+  - component: {fileID: 1624545654102661487}
   m_Layer: 0
   m_Name: Shadow_ball
   m_TagString: Untagged
@@ -111,3 +112,17 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 0.5
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &1624545654102661487
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6737164778937158979}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 33b8b5c151781f240a67493e8314ab40, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ShadowFollower
+  moveSpeed: 5
+  rotationSpeed: 5

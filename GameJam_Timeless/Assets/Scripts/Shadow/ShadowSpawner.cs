@@ -95,7 +95,7 @@ public class ShadowSpawner : MonoBehaviour
         Quaternion startRotation = rotations[0];
         _currentShadow = Instantiate(shadowPrefab, startPosition, startRotation);
         
-        CloneFollower follower = _currentShadow.AddComponent<CloneFollower>();
+        ShadowFollower follower = _currentShadow.AddComponent<ShadowFollower>();
         follower.SetPath(positions, rotations);
     }
 }
