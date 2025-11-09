@@ -11,6 +11,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/MultiplePlanets.unity
     guid: 3b5abb18deec84f3db55ab693eed6bd5
+  - enabled: 1
+    path: Assets/Scenes/End.unity
+    guid: b8db826c4557e4ff092769eec6135569
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0
