@@ -13,6 +13,8 @@ public class ShadowSpawner : MonoBehaviour
     public PathRecorder recorder;
     [SerializeField] [Tooltip("Shadow prefab to spawn")]
     public GameObject shadowPrefab; // Shadow prefab to spawn
+    [SerializeField] [Tooltip("Vertical offset applied along the recorded up direction when spawning the shadow")]
+    public float spawnHeightOffset = 3.5f;
     private GameObject _currentShadow;
     
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -93,6 +95,11 @@ public class ShadowSpawner : MonoBehaviour
 
         Vector3 startPosition = positions[0];
         Quaternion startRotation = rotations[0];
+        if (spawnHeightOffset != 0f)
+        {
+            startPosition += startRotation * Vector3.up * spawnHeightOffset;
+        }
+
         _currentShadow = Instantiate(shadowPrefab, startPosition, startRotation);
         
         ShadowFollower follower = _currentShadow.AddComponent<ShadowFollower>();

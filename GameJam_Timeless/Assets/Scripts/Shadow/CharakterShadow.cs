@@ -17,6 +17,7 @@ public class CharakterShadow : MonoBehaviour
     [SerializeField] float groundCheckDistance = 0.4f;
     [SerializeField] LayerMask groundMask = ~0;
 
+
     private CharacterController controller;
     private Vector3 gravityVelocity;
     private float nextPlanetSearchTime;
