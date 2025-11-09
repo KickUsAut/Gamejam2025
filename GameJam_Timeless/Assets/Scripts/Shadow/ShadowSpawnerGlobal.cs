@@ -25,6 +25,13 @@ public class ShadowSpawnerGlobal : MonoBehaviour
             StartRecording();
         }
         
+        // Only for testing purpose: Press G to replay all Recorded
+        // TODO change to reset AFTER new planet enter.
+        if (Input.GetKeyDown(KeyCode.G))
+        {
+            ReplayAllRecorded();
+        }
+        
         // Only for testing purposes: Press H to spawn a shadow === Stop recording and play
         // TODO change to swap BEFORE new planet enter.
         if (Input.GetKeyDown(KeyCode.H))
@@ -37,6 +44,14 @@ public class ShadowSpawnerGlobal : MonoBehaviour
     void StartRecording()
     {
         recorder.StartRecording();
+    }
+
+    void ReplayAllRecorded()
+    {
+        foreach (GameObject shadow in shadowPrefabs.Values)
+        {
+            shadow.GetComponent<ShadowFollower>().ResetPath();
+        }
     }
     
     void StopRecording()
