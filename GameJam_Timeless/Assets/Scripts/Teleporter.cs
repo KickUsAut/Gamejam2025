@@ -29,7 +29,7 @@ public class Teleporter : MonoBehaviour
         yield return new WaitForSeconds(delaySeconds);
         if (target == null) yield break;
         
-        Debug.Log("Before Teleporting");
+        // Before Teleportation stop recording and create shadow prefab
         shadows.GetComponent<ShadowSpawnerGlobal>().StopRecording();
         shadows.GetComponent<ShadowSpawnerGlobal>().CreateShadowPrefabs(currentPlanet.name);
 
@@ -56,7 +56,7 @@ public class Teleporter : MonoBehaviour
             if (planetT != null)
             {
                 fc.OnTeleported(planetT.gameObject);
-                Debug.Log("After Teleporting");
+                // After Teleportation start recording again
                 shadows.GetComponent<ShadowSpawnerGlobal>().StartRecording();
             }
         }

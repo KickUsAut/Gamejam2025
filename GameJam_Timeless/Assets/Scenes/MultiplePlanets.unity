@@ -563,6 +563,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Teleporter
   target: {fileID: 2063426323}
   arrivalPlanet: {fileID: 481243380}
+  currentPlanet: {fileID: 679426036}
+  shadows: {fileID: 774067057}
   heightOffset: 1.5
   delaySeconds: 0.35
   oneUse: 0
@@ -1391,6 +1393,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Teleporter
   target: {fileID: 876702431}
   arrivalPlanet: {fileID: 162311947}
+  currentPlanet: {fileID: 2070427734}
+  shadows: {fileID: 774067057}
   heightOffset: 1.5
   delaySeconds: 0.35
   oneUse: 0
@@ -1506,6 +1510,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Teleporter
   target: {fileID: 1564993885}
   arrivalPlanet: {fileID: 512330535}
+  currentPlanet: {fileID: 481243375}
+  shadows: {fileID: 774067057}
   heightOffset: 1.5
   delaySeconds: 0.35
   oneUse: 0
@@ -1636,6 +1642,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Teleporter
   target: {fileID: 1653638285}
   arrivalPlanet: {fileID: 679426037}
+  currentPlanet: {fileID: 162311942}
+  shadows: {fileID: 774067057}
   heightOffset: 1.5
   delaySeconds: 0.35
   oneUse: 0
