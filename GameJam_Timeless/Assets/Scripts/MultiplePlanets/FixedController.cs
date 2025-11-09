@@ -10,20 +10,12 @@ public class FixedController : MonoBehaviour
     [Header("Move")]
     public float speed = 4f;
 
-    [Header("Jump Tuning")]
-    [Tooltip("Gewünschte Sprunghöhe in Metern bezogen auf 'gravity' unten.")]
-    [SerializeField] float jumpHeight = 2.2f;   // 2.2 m
-    [SerializeField] float coyoteTime = 0.12f;  // nach Verlassen des Bodens
-    [SerializeField] float jumpBufferTime = 0.15f; // vor Landung gedrückt
-
     [Header("Gravity")]
     [SerializeField] float gravity = 30f;                 // m/s^2
     [SerializeField] float fallGravityMultiplier = 1.4f;
-    [SerializeField] float lowJumpGravityMultiplier = 1.1f;
 
     [Header("Animation Parameters")]
     public string ANIM_SPEED = "Speed";               // float   0..1
-    public string ANIM_JUMP = "Jump";                 // trigger
     public string ANIM_GROUNDED = "Grounded";         // bool
     public string ANIM_VERTICAL_VELOCITY = "VerticalVelocity"; // float
 
@@ -45,12 +37,6 @@ public class FixedController : MonoBehaviour
     bool inLandHold = false;
     float landHoldTimer = 0f;
 
-    // Jump helper
-    float coyoteCounter = 0f;
-    float jumpBufferCounter = 0f;
-    bool requestJump = false;
-    bool consumedJumpThisFrame = false; // blockt Soft-Snap direkt nach Sprung
-
     // State
     bool OnGround = false;
     bool wasOnGround = false;
@@ -61,10 +47,8 @@ public class FixedController : MonoBehaviour
     Animator animator;
 
     // Input
-    float horizontalInput;
     float verticalInput;
     float rotationInput;
-    bool jumpHeld;
 
     void Start()
     {
@@ -85,20 +69,14 @@ public class FixedController : MonoBehaviour
     void Update()
     {
         // --- Input ---
-        horizontalInput = Input.GetAxis("Horizontal");
-        verticalInput = Input.GetAxis("Vertical");
+        verticalInput = Input.GetKey(KeyCode.W) ? 1f : 0f;
 
         rotationInput = 0f;
-        if (Input.GetKey(KeyCode.E)) rotationInput = 1f;
-        else if (Input.GetKey(KeyCode.Q)) rotationInput = -1f;
+        if (Input.GetKey(KeyCode.D)) rotationInput = 1f;
+        else if (Input.GetKey(KeyCode.A)) rotationInput = -1f;
 
         if (rotationInput != 0f)
             transform.Rotate(0f, rotationInput * 150f * Time.deltaTime, 0f);
-
-        // Jump input
-        jumpHeld = Input.GetKey(KeyCode.Space);
-        if (Input.GetKeyDown(KeyCode.Space))
-            jumpBufferCounter = jumpBufferTime; // Buffer starten
 
         // --- Ground Check: SphereCast + Entprellen ---
         RaycastHit hit;
@@ -146,25 +124,13 @@ public class FixedController : MonoBehaviour
         if (OnGround) { timeSinceGrounded = 0f; timeSinceUngrounded += Time.deltaTime; }
         else          { timeSinceUngrounded = 0f; timeSinceGrounded += Time.deltaTime; }
 
-        // Coyote / Buffer
-        coyoteCounter = OnGround ? coyoteTime : Mathf.Max(0f, coyoteCounter - Time.deltaTime);
-        jumpBufferCounter = Mathf.Max(0f, jumpBufferCounter - Time.deltaTime);
-
-        // Jump-Anforderung: Buffer aktiv und noch in Coyote
-        if (jumpBufferCounter > 0f && coyoteCounter > 0f)
-        {
-            requestJump = true;
-            jumpBufferCounter = 0f; // verbrauchen
-        }
-
-        // Soft-Snap beim leichten Abheben (aber NICHT in dem Frame, in dem wir springen)
-        if (!consumedJumpThisFrame && !OnGround && rawGrounded && hit.distance < groundSnapDistance && rb && !rb.isKinematic)
+        // Soft-Snap beim leichten Abheben, damit die Figur am Boden bleibt
+        if (!OnGround && rawGrounded && hit.distance < groundSnapDistance && rb && !rb.isKinematic)
         {
             float vDotUp = Vector3.Dot(rb.velocity, transform.up);
             if (vDotUp <= 0f)
                 rb.AddForce((-transform.up) * gravity * 0.5f, ForceMode.Acceleration);
         }
-        consumedJumpThisFrame = false;
 
         // Land-Pause nur wenn wirklich kurz in der Luft
         if (OnGround && !wasOnGround && timeSinceUngrounded >= minAirTime)
@@ -195,10 +161,9 @@ public class FixedController : MonoBehaviour
 
         // Tangenten
         Vector3 tangentForward = Vector3.ProjectOnPlane(transform.forward, gravDirection).normalized;
-        Vector3 tangentRight = Vector3.ProjectOnPlane(transform.right, gravDirection).normalized;
 
         // Horizontal velocity aus Input
-        Vector3 movementInput = tangentRight * horizontalInput + tangentForward * verticalInput;
+        Vector3 movementInput = tangentForward * verticalInput;
         Vector3 desiredHorizontalVelocity = Vector3.ClampMagnitude(movementInput, 1f) * speed;
 
         Vector3 currentVelocity = rb.velocity;
@@ -214,32 +179,10 @@ public class FixedController : MonoBehaviour
             rb.velocity = verticalVelocity + horizontalVel * 0.5f;
         }
 
-        // Ausgeführter Sprung: setze gezielte Startgeschwindigkeit, masseunabhängig
-        if (requestJump)
-        {
-            requestJump = false;
-            inLandHold = false; // Land-Pause abbrechen
-
-            // Ziel-Startgeschwindigkeit aus gewünschter Höhe h: v0 = sqrt(2*g*h)
-            float jumpSpeed = Mathf.Sqrt(2f * gravity * Mathf.Max(0.01f, jumpHeight));
-
-            // vertikale Komponente ersetzen
-            Vector3 vUp = Vector3.Project(rb.velocity, transform.up);
-            Vector3 vFlat = rb.velocity - vUp;
-            rb.velocity = vFlat + transform.up * jumpSpeed; // ForceMode.VelocityChange-Äquivalent
-
-            // ein Frame lang kein Soft-Snap
-            consumedJumpThisFrame = true;
-
-            // Animation jetzt triggern
-            if (animator) animator.SetTrigger(ANIM_JUMP);
-        }
-
         // Schwerkraft
         float verticalSpeedNow = Vector3.Dot(rb.velocity, transform.up);
         float effectiveGravity = gravity;
         if (verticalSpeedNow < 0f) effectiveGravity *= fallGravityMultiplier;
-        else if (!jumpHeld)        effectiveGravity *= lowJumpGravityMultiplier;
 
         rb.AddForce(gravDirection * -effectiveGravity, ForceMode.Acceleration);
     }
@@ -248,7 +191,7 @@ public class FixedController : MonoBehaviour
     {
         if (!animator) return;
 
-        float inputMagnitude = new Vector2(horizontalInput, verticalInput).magnitude;
+        float inputMagnitude = Mathf.Abs(verticalInput);
         float movementSpeed = Mathf.Clamp01(inputMagnitude);
 
         // weiches Setzen + Land-Pause
