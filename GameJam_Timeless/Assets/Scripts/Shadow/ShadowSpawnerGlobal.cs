@@ -13,6 +13,8 @@ public class ShadowSpawnerGlobal : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        // game start with recording
+        StartRecording();
     }
 
     // Update is called once per frame
@@ -41,12 +43,12 @@ public class ShadowSpawnerGlobal : MonoBehaviour
         }
     }
     
-    void StartRecording()
+    public void StartRecording()
     {
         recorder.StartRecording();
     }
 
-    void ReplayAllRecorded()
+    public void ReplayAllRecorded()
     {
         foreach (GameObject shadow in shadowPrefabs.Values)
         {
@@ -54,13 +56,16 @@ public class ShadowSpawnerGlobal : MonoBehaviour
         }
     }
     
-    void StopRecording()
+    public void StopRecording()
     {
         recorder.StopRecording();
     }
 
-    void CreateShadowPrefabs(string name="default")
+    public void CreateShadowPrefabs(string name="default")
     {
+        // Avoid duplicate cursed empty shadows because functions are called to often in Teleporter
+        if (recorder.GetRecordedPositions() == null || recorder.GetRecordedPositions().Count == 0) return;
+        
         List<Vector3> recordedPositions = recorder.GetRecordedPositions();
         List<Quaternion> recordedRotations = recorder.GetRecordedRotations();
         GameObject shadow = Instantiate(shadowPrefab, recordedPositions[0], recordedRotations[0]);

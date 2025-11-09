@@ -6,6 +6,8 @@ public class Teleporter : MonoBehaviour
     [Header("Ziel")]
     public Transform target;
     public Transform arrivalPlanet;   // <- hier den Ziel-Planeten zuweisen
+    public GameObject currentPlanet;
+    public ShadowSpawnerGlobal shadows;
     public float heightOffset = 1.5f;
     public float delaySeconds = 0.35f;
     public bool oneUse = false;
@@ -26,6 +28,10 @@ public class Teleporter : MonoBehaviour
     {
         yield return new WaitForSeconds(delaySeconds);
         if (target == null) yield break;
+        
+        Debug.Log("Before Teleporting");
+        shadows.GetComponent<ShadowSpawnerGlobal>().StopRecording();
+        shadows.GetComponent<ShadowSpawnerGlobal>().CreateShadowPrefabs(currentPlanet.name);
 
         Transform t = col.transform;
         Vector3 dest = target.position + Vector3.up * heightOffset;
@@ -47,7 +53,12 @@ public class Teleporter : MonoBehaviour
         {
             // bevorzugt explizit zugewiesener Planet
             Transform planetT = arrivalPlanet != null ? arrivalPlanet : FindClosestPlanet(t.position);
-            if (planetT != null) fc.OnTeleported(planetT.gameObject);
+            if (planetT != null)
+            {
+                fc.OnTeleported(planetT.gameObject);
+                Debug.Log("After Teleporting");
+                shadows.GetComponent<ShadowSpawnerGlobal>().StartRecording();
+            }
         }
 
         if (rb != null) rb.isKinematic = false;
