@@ -80,6 +80,7 @@ public class ShadowSpawnerGlobal : MonoBehaviour
     
     public void PlayShadow()
     {
+        if (shadow == null) return;
         shadow.GetComponent<ShadowFollower>().ResetPath();
     }
 }
