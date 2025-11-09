@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using System.Collections.Generic;
 
@@ -13,6 +14,11 @@ public class ShadowFollower : MonoBehaviour
     private List<Vector3> _pathPosition;
     private List<Quaternion> _pathRotations;
     private int _currentIndex = 0;
+
+    private void Start()
+    {
+        gameObject.SetActive(false);
+    }
 
     // Update is called once per frame
     void Update()
@@ -43,7 +49,7 @@ public class ShadowFollower : MonoBehaviour
      * Checks if the clone has started following the path
      * @return true if the path is not set, false otherwise
      */
-    private bool HasStartedPath()
+    public bool HasStartedPath()
     {
         return _pathPosition == null || _pathRotations == null || 
             _pathPosition.Count == 0 || _pathRotations.Count == 0;
@@ -53,7 +59,7 @@ public class ShadowFollower : MonoBehaviour
      * Checks if the clone has finished following the path
      * @return true if the clone has reached the end of the path, false otherwise
      */
-    private bool HasFinishedPath()
+    public bool HasFinishedPath()
     {
         return _currentIndex >= _pathPosition.Count || _currentIndex >= _pathRotations.Count;
     }
@@ -64,6 +70,7 @@ public class ShadowFollower : MonoBehaviour
      */
     public void SetPath(List<Vector3> recordedPathPosition, List<Quaternion> recordedPathRotations)
     {
+        _currentIndex = 0;
         _pathPosition = recordedPathPosition;
         _pathRotations = recordedPathRotations;
     }
